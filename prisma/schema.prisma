@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/* =====================
+   USER
+===================== */
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  locale    String   @default("ro")
+
+  expenses  Expense[]
+  budgets   BudgetMember[]
+  alerts    AlertPreference?
+  createdAt DateTime @default(now())
+}
+
+/* =====================
+   BUDGET & SHARED
+===================== */
+model Budget {
+  id        String   @id @default(uuid())
+  name      String
+  month     String   // ex: 2026-05
+  amount    Float
+
+  members   BudgetMember[]
+  expenses  Expense[]
+}
+
+model BudgetMember {
+  id        String   @id @default(uuid())
+  role      BudgetRole
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  budgetId  String
+  budget    Budget   @relation(fields: [budgetId], references: [id])
+}
+
+enum BudgetRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+/* =====================
+   EXPENSE
+===================== */
+model Expense {
+  id        String   @id @default(uuid())
+  date      DateTime
+  details   String
+  amount    Float
+  type      ExpenseType
+
+  // 🔗 RELAȚIE CU USER
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  // 🔗 RELAȚIE CU BUDGET
+  budgetId  String
+  budget    Budget   @relation(fields: [budgetId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum ExpenseType {
+  PERSONAL
+  BUSINESS
+}
+
+/* =====================
+   ALERTS
+===================== */
+model AlertPreference {
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id])
+
+  emailEnabled Boolean @default(true)
+  threshold    Int     @default(80)
+}
