@@ -5,6 +5,18 @@ export async function GET() {
   const accounts = await prisma.payingAccount.findMany({
     orderBy: { name: "asc" },
   });
-
   return NextResponse.json(accounts);
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+
+  const account = await prisma.payingAccount.create({
+    data: {
+      name: body.name,
+      balance: 0,
+    },
+  });
+
+  return NextResponse.json(account, { status: 201 });
 }

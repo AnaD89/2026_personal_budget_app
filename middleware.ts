@@ -4,8 +4,8 @@ export const config = {
   matcher: [
     // ✅ Protejăm DOAR pagini UI
     "/dashboard/:path*",
-    "/expenses/:path*",
-    "/reports/:path*",
+    //"/expenses/:path*",
+    //"/reports/:path*",
     "/accounts/:path*",
   ],
 };
