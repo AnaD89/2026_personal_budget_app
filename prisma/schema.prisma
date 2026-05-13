@@ -1,5 +1,6 @@
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -106,10 +107,11 @@ model Category {
    PAYING ACCOUNT (CONT PLĂTITOR)
 ===================== */
 model PayingAccount {
-  id       String   @id @default(uuid())
-  name     String
-  balance  Float    @default(0)
-  expenses Expense[]
+  id           String               @id @default(uuid())
+  name         String
+  balance      Float                @default(0)
+  expenses     Expense[]
+  transactions AccountTransaction[]
 }
 
 /* =====================
@@ -153,4 +155,22 @@ model AlertPreference {
 
   emailEnabled  Boolean @default(true)
   threshold     Int     @default(80)
+}
+
+
+model AccountTransaction {
+  id              String   @id @default(uuid())
+  amount          Float
+  type            TransactionType
+  description     String?
+  createdAt       DateTime @default(now())
+
+  payingAccountId String
+  payingAccount   PayingAccount @relation(fields: [payingAccountId], references: [id])
+}
+
+enum TransactionType {
+  EXPENSE     // cheltuială
+  INCOME      // încasare
+  ADJUSTMENT  // ajustare manuală
 }

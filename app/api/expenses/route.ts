@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 /**
- * ✅ POST – creare cheltuială
+ * ✅ POST – creare cheltuială + actualizare sold
  */
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -45,34 +45,59 @@ export async function POST(req: Request) {
         ? body.payingAccountId
         : null;
 
-    const expense = await prisma.expense.create({
-      data: {
-        date: new Date(body.date),
-        amount: Number(body.amount),
-        details: body.details,
-        type: body.type,
-        isRecurring: Boolean(body.isRecurring),
+    // ✅ TRANZACȚIE ATOMICĂ
+    const [expense] = await prisma.$transaction([
+      // 1️⃣ creează cheltuiala
+      prisma.expense.create({
+        data: {
+          date: new Date(body.date),
+          amount: Number(body.amount),
+          details: body.details,
+          type: body.type,
+          isRecurring: Boolean(body.isRecurring),
 
-        // ✅ persoana = user logat
-        user: {
-          connect: { email: session.user.email },
+          user: {
+            connect: { email: session.user.email },
+          },
+
+          ...(categoryId && {
+            category: {
+              connect: { id: categoryId },
+            },
+          }),
+
+          ...(payingAccountId && {
+            payingAccount: {
+              connect: { id: payingAccountId },
+            },
+          }),
         },
+      }),
 
-        // ✅ categorie (opțional)
-        ...(categoryId && {
-          category: {
-            connect: { id: categoryId },
-          },
-        }),
+      // 2️⃣ creează tranzacția de cont (doar dacă există cont)
+      ...(payingAccountId
+        ? [
+            prisma.accountTransaction.create({
+              data: {
+                amount: -Number(body.amount),
+                type: "EXPENSE",
+                description: body.details,
+                payingAccountId,
+              },
+            }),
 
-        // ✅ cont plătitor (opțional)
-        ...(payingAccountId && {
-          payingAccount: {
-            connect: { id: payingAccountId },
-          },
-        }),
-      },
-    });
+            // 3️⃣ actualizează soldul contului
+            prisma.payingAccount.update({
+              where: { id: payingAccountId },
+              data: {
+                balance: {
+                  decrement: Number(body.amount),
+                },
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {

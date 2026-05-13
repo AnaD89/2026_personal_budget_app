@@ -1,20 +1,35 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Expense, Category } from "@prisma/client";
+
+type ExpenseWithCategory = Expense & {
+  category: Category | null;
+};
 
 export async function GET() {
-  const expenses = await prisma.expense.findMany({
+  const expenses = (await prisma.expense.findMany({
     include: { category: true },
-  });
+  })) as ExpenseWithCategory[];
 
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const total = expenses.reduce(
+    (sum: number, e: ExpenseWithCategory) => sum + e.amount,
+    0
+  );
 
   const byType = {
     PERSONAL: expenses
-      .filter((e) => e.type === "PERSONAL")
-      .reduce((s, e) => s + e.amount, 0),
+      .filter((e: ExpenseWithCategory) => e.type === "PERSONAL")
+      .reduce(
+        (sum: number, e: ExpenseWithCategory) => sum + e.amount,
+        0
+      ),
+
     BUSINESS: expenses
-      .filter((e) => e.type === "BUSINESS")
-      .reduce((s, e) => s + e.amount, 0),
+      .filter((e: ExpenseWithCategory) => e.type === "BUSINESS")
+      .reduce(
+        (sum: number, e: ExpenseWithCategory) => sum + e.amount,
+        0
+      ),
   };
 
   const byCategory: Record<string, number> = {};
