@@ -1,18 +1,33 @@
 export const runtime = "nodejs";
 
 import { prisma } from "@/lib/prisma";
-import PDFDocument from "pdfkit";
 import { PassThrough, Readable } from "stream";
+import path from "path";
 
 export async function GET() {
   try {
+    // ✅ dynamic import (NU import static)
+    const PDFDocument = (await import("pdfkit")).default;
+
     const categories = await prisma.category.findMany({
       include: { expenses: true },
     });
 
-    const doc = new PDFDocument({ margin: 50 });
-    const nodeStream = new PassThrough();
+    // ✅ font TTF absolut
+    const fontPath = path.join(
+      process.cwd(),
+      "public",
+      "fonts",
+      "Roboto-Regular.ttf"
+    );
 
+    // ✅ font setat DIRECT în constructor (dezactivează Helvetica)
+    const doc = new PDFDocument({
+      margin: 50,
+      font: fontPath,
+    });
+
+    const nodeStream = new PassThrough();
     doc.pipe(nodeStream);
 
     doc.fontSize(18).text("Categorii – Raport", { underline: true });
@@ -37,8 +52,8 @@ export async function GET() {
 
     doc.end();
 
-    // ✅ FOARTE IMPORTANT: folosim Response, nu NextResponse
-    const webStream = Readable.toWeb(nodeStream) as unknown as globalThis.ReadableStream;
+    const webStream = Readable.toWeb(nodeStream);
+
     return new Response(webStream, {
       headers: {
         "Content-Type": "application/pdf",
@@ -50,8 +65,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("EXPORT PDF ERROR:", error);
-    return new Response("Internal Server Error", {
-      status: 500,
-    });
+    return new Response("Internal Server Error", { status: 500 });
   }
 }
