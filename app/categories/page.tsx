@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { useToast } from "@/components/ToastProvider";
+import ExportButtons from "@/components/ExportButtons";
 
 type Category = {
   id: string;
@@ -59,7 +60,7 @@ export default function CategoriesPage() {
     setName("");
     showToast("Categorie adăugată", "success");
 
-    // 🔄 reload statistici
+    // 🔄 refresh statistici
     fetch("/api/categories/stats")
       .then((r) => r.json())
       .then((data) => setStats(data.categories));
@@ -71,7 +72,7 @@ export default function CategoriesPage() {
     setCategories((prev) => prev.filter((c) => c.id !== id));
     showToast("Categorie ștearsă", "success");
 
-    // 🔄 reload statistici
+    // 🔄 refresh statistici
     fetch("/api/categories/stats")
       .then((r) => r.json())
       .then((data) => setStats(data.categories));
@@ -79,21 +80,27 @@ export default function CategoriesPage() {
 
   return (
     <div className={styles.page}>
-      {/* HEADER */}
+      {/* ✅ HEADER CU EXPORT */}
       <div className={styles.header}>
         <h1 className={styles.title}>Categorii</h1>
 
-        <div className={styles.addBox}>
-          <input
-            className={styles.input}
-            placeholder="Categorie nouă"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button className={styles.primaryBtn} onClick={add}>
-            Adaugă
-          </button>
-        </div>
+        <ExportButtons
+          pdfUrl="/api/export/categories/pdf"
+          excelUrl="/api/export/categories/excel"
+        />
+      </div>
+
+      {/* ADD CATEGORY */}
+      <div className={styles.addBox}>
+        <input
+          className={styles.input}
+          placeholder="Categorie nouă"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button className={styles.primaryBtn} onClick={add}>
+          Adaugă
+        </button>
       </div>
 
       {/* LISTĂ CATEGORII */}
