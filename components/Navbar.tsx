@@ -63,6 +63,10 @@ export default function Navbar() {
           >
             Tranzacții
           </Link>
+          <Link href="/converter" className={linkClass("/converter")}>
+  Converter valutar
+</Link>
+
         </div>
 
         <div className={styles.right}>
