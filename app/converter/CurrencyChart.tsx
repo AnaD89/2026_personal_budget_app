@@ -25,26 +25,41 @@ type HistoryItem = {
 type CurrencyOption = "ALL" | "EUR" | "USD" | "CHF";
 
 export default function CurrencyChart({
-  data,
+  history,
+  todayRates,
 }: {
-  data: HistoryItem[];
+  history: HistoryItem[];
+  todayRates: Rates;
 }) {
   const [currency, setCurrency] =
     useState<CurrencyOption>("ALL");
 
-  const chartData = data.map((d) => ({
-    date: d.date,
-    EUR: d.rates.EUR,
-    USD: d.rates.USD,
-    CHF: d.rates.CHF,
+  // ✅ date pentru grafic
+  const chartData = history.map((h) => ({
+    date: h.date,
+    EUR: h.rates.EUR,
+    USD: h.rates.USD,
+    CHF: h.rates.CHF,
   }));
+
+  // ✅ culoare dinamică în funcție de trend
+  const getColor = (c: keyof Rates) => {
+    const yesterday = history[0]?.rates[c];
+    const today = todayRates[c];
+
+    if (today > yesterday) return "#16a34a"; // verde
+    if (today < yesterday) return "#dc2626"; // roșu
+    return "#6b7280"; // gri
+  };
 
   return (
     <div className="mt-6">
       <div className="flex items-center gap-4 mb-2">
         <h2 className="font-semibold">
           Evoluție curs BNR –{" "}
-          {currency === "ALL" ? "toate valutele" : currency}
+          {currency === "ALL"
+            ? "toate valutele"
+            : currency}
         </h2>
 
         <select
@@ -69,29 +84,32 @@ export default function CurrencyChart({
             <Tooltip />
             <Legend />
 
-            {(currency === "ALL" || currency === "EUR") && (
+            {(currency === "ALL" ||
+              currency === "EUR") && (
               <Line
                 type="monotone"
                 dataKey="EUR"
-                stroke="#2563eb"
+                stroke={getColor("EUR")}
                 strokeWidth={2}
               />
             )}
 
-            {(currency === "ALL" || currency === "USD") && (
+            {(currency === "ALL" ||
+              currency === "USD") && (
               <Line
                 type="monotone"
                 dataKey="USD"
-                stroke="#16a34a"
+                stroke={getColor("USD")}
                 strokeWidth={2}
               />
             )}
 
-            {(currency === "ALL" || currency === "CHF") && (
+            {(currency === "ALL" ||
+              currency === "CHF") && (
               <Line
                 type="monotone"
                 dataKey="CHF"
-                stroke="#dc2626"
+                stroke={getColor("CHF")}
                 strokeWidth={2}
               />
             )}

@@ -14,6 +14,11 @@ type HistoryItem = {
   rates: Rates;
 };
 
+type Trend =
+  | { dir: "up"; diff: number }
+  | { dir: "down"; diff: number }
+  | { dir: "same"; diff: number };
+
 export default function ConverterPage() {
   const [rates, setRates] = useState<Rates | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -24,6 +29,7 @@ export default function ConverterPage() {
     "RON_TO_FX" | "FX_TO_RON"
   >("RON_TO_FX");
 
+  /* ===== LOAD DATE BNR ===== */
   useEffect(() => {
     fetch("/api/bnr/rates")
       .then((r) => r.json())
@@ -37,6 +43,22 @@ export default function ConverterPage() {
     return <p>Se încarcă cursul BNR…</p>;
   }
 
+  /* ===== TREND FAȚĂ DE IERI ===== */
+  const getTrend = (c: keyof Rates): Trend => {
+    if (history.length === 0) {
+      return { dir: "same", diff: 0 };
+    }
+
+    const yesterday = history[0].rates[c];
+    const today = rates[c];
+    const diff = Number((today - yesterday).toFixed(4));
+
+    if (diff > 0) return { dir: "up", diff };
+    if (diff < 0) return { dir: "down", diff };
+    return { dir: "same", diff: 0 };
+  };
+
+  /* ===== CONVERSIE ===== */
   const result =
     direction === "RON_TO_FX"
       ? (amount / rates[currency]).toFixed(2)
@@ -48,12 +70,10 @@ export default function ConverterPage() {
         Conversie valutară (BNR)
       </h1>
 
-      {/* CONVERTER */}
+      {/* ===== CONVERTER ===== */}
       <div className="flex flex-wrap gap-4 items-end">
         <div>
-          <label className="block text-sm">
-            Sumă
-          </label>
+          <label className="block text-sm">Sumă</label>
           <input
             type="number"
             value={amount}
@@ -120,19 +140,48 @@ export default function ConverterPage() {
         </div>
       </div>
 
-      {/* CURS AZI */}
+      {/* ===== CURS AZI + TREND ===== */}
       <section>
         <h2 className="font-semibold">
           Curs BNR – Azi
         </h2>
-        <ul className="list-disc ml-6">
-          <li>EUR: {rates.EUR}</li>
-          <li>USD: {rates.USD}</li>
-          <li>CHF: {rates.CHF}</li>
+
+        <ul className="space-y-1">
+          {(["EUR", "USD", "CHF"] as (keyof Rates)[]).map(
+            (c) => {
+              const trend = getTrend(c);
+
+              return (
+                <li
+                  key={c}
+                  className="flex items-center gap-2"
+                >
+                  <span className="w-12">{c}:</span>
+                  <span>{rates[c]}</span>
+
+                  {trend.dir === "up" && (
+                    <span className="text-green-600">
+                      🔺 +{trend.diff}
+                    </span>
+                  )}
+                  {trend.dir === "down" && (
+                    <span className="text-red-600">
+                      🔻 {trend.diff}
+                    </span>
+                  )}
+                  {trend.dir === "same" && (
+                    <span className="text-gray-500">
+                      ➖ 0
+                    </span>
+                  )}
+                </li>
+              );
+            }
+          )}
         </ul>
       </section>
 
-      {/* ISTORIC + GRAFIC */}
+      {/* ===== ISTORIC + GRAFIC ===== */}
       <section>
         <h2 className="font-semibold">
           Istoric ultimele 5 zile
@@ -167,7 +216,10 @@ export default function ConverterPage() {
           </tbody>
         </table>
 
-        <CurrencyChart data={history} />
+        <CurrencyChart
+          history={history}
+          todayRates={rates}
+        />
       </section>
     </main>
   );
