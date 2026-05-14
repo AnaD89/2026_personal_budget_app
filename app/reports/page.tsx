@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
+import html2canvas from "html2canvas";
 import Charts from "./Charts";
-import PieChartByCategory from "./PieChartByCategory";
 
 type Report = {
   total: number;
@@ -14,118 +14,132 @@ type Report = {
   byCategory: Record<string, number>;
 };
 
-type PieResponse = {
-  totalIncome: number;
-  chartData: {
-    name: string;
-    amount: number;
-    percent: number;
-  }[];
-};
-
 export default function ReportsPage() {
   const [report, setReport] = useState<Report | null>(null);
-  const [pieData, setPieData] = useState<PieResponse | null>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
 
-  // ✅ raport clasic
+  // ✅ load raport
   useEffect(() => {
     fetch("/api/reports")
-      .then((res) => res.json())
+      .then((r) => r.json())
       .then(setReport);
   }, []);
 
-  // ✅ date pentru pie chart
-  useEffect(() => {
-  fetch("/api/reports/pie")
-    .then((r) => {
-      if (!r.ok) throw new Error("API error");
-      return r.json();
-    })
-    .then(setPieData)
-    .catch((err) => {
-      console.error(err);
-      setPieData(null);
+  // ✅ export PDF cu grafice
+  const exportPdf = async () => {
+    if (!reportRef.current) return;
+
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      backgroundColor: "#ffffff",
     });
-}, []);
+
+    const image = canvas.toDataURL("image/png");
+
+    const res = await fetch("/api/export/reports/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image }),
+    });
+
+    if (!res.ok) return;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "report.pdf";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
 
   if (!report) {
     return <p>Se încarcă rapoartele…</p>;
   }
 
-  // ✅ date pentru bar chart (dacă îl păstrezi)
   const byCategory = Object.entries(report.byCategory).map(
     ([name, amount]) => ({ name, amount })
   );
 
-  // ✅ temporar (sold în timp – urmează DB real)
-  const balanceHistory = [
-    { date: "2024-01", balance: 1000 },
-    { date: "2024-02", balance: 800 },
-    { date: "2024-03", balance: 1200 },
-  ];
-
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Rapoarte</h1>
-
-      {/* SUMMARY */}
-      <div className={styles.cards}>
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Total cheltuieli</div>
-          <div className={styles.cardValue}>
-            {report.total} RON
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Personal</div>
-          <div
-            className={`${styles.cardValue} ${styles.personal}`}
-          >
-            {report.byType.PERSONAL} RON
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Business</div>
-          <div
-            className={`${styles.cardValue} ${styles.business}`}
-          >
-            {report.byType.BUSINESS} RON
-          </div>
-        </div>
+      {/* HEADER */}
+      <div className={styles.header}>
+        <h1 className={styles.title}>Rapoarte</h1>
+        <button
+          className={styles.primaryBtn}
+          onClick={exportPdf}
+        >
+          Export PDF
+        </button>
       </div>
 
-      {/* ✅ PIE CHART – PROCENTE DIN VENIT */}
-      {pieData && (
-        <PieChartByCategory data={pieData.chartData} />
-      )}
+      {/* CONȚINUT EXPORTABIL */}
+      <div ref={reportRef}>
+        {/* SUMMARY */}
+        <div className={styles.cards}>
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>
+              Total cheltuieli
+            </div>
+            <div className={styles.cardValue}>
+              {report.total} RON
+            </div>
+          </div>
 
-      {/* ✅ (OPȚIONAL) BAR / LINE CHART */}
-      <Charts
-        byCategory={byCategory}
-        balanceHistory={balanceHistory}
-      />
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>
+              Personal
+            </div>
+            <div
+              className={`${styles.cardValue} ${styles.personal}`}
+            >
+              {report.byType.PERSONAL} RON
+            </div>
+          </div>
 
-      {/* LISTĂ TEXTUALĂ */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          Cheltuieli pe categorii
-        </h2>
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>
+              Business
+            </div>
+            <div
+              className={`${styles.cardValue} ${styles.business}`}
+            >
+              {report.byType.BUSINESS} RON
+            </div>
+          </div>
+        </div>
 
-        <div className={styles.list}>
-          {Object.entries(report.byCategory).map(
-            ([category, amount]) => (
-              <div key={category} className={styles.row}>
-                <span className={styles.categoryName}>
-                  {category}
-                </span>
-                <span className={styles.amount}>
-                  {amount} RON
-                </span>
-              </div>
-            )
-          )}
+        {/* GRAFICE */}
+        <Charts byCategory={byCategory} />
+
+        {/* LISTĂ CATEGORII */}
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            Cheltuieli pe categorii
+          </h2>
+
+          <div className={styles.list}>
+            {Object.entries(report.byCategory).map(
+              ([category, amount]) => (
+                <div
+                  key={category}
+                  className={styles.row}
+                >
+                  <span
+                    className={styles.categoryName}
+                  >
+                    {category}
+                  </span>
+                  <span className={styles.amount}>
+                    {amount} RON
+                  </span>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
