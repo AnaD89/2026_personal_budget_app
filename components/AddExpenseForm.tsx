@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "@/app/expenses/page.module.css";
 
 type Category = {
   id: string;
@@ -97,32 +98,37 @@ export default function AddExpenseForm() {
   };
 
   return (
-    <div style={{ marginTop: 24, border: "2px solid red", padding: 12 }}>
-      <h3>Adaugă cheltuială</h3>
-
+    <form className={styles.form}>
       <input
         type="date"
+        className={styles.input}
         value={form.date}
         onChange={(e) => setForm({ ...form, date: e.target.value })}
       />
 
       <input
         type="number"
+        className={styles.input}
         placeholder="Sumă"
         value={form.amount}
         onChange={(e) => setForm({ ...form, amount: e.target.value })}
       />
 
       <input
+        className={styles.input}
         placeholder="Detalii"
         value={form.details}
         onChange={(e) => setForm({ ...form, details: e.target.value })}
       />
 
       <select
+        className={styles.select}
         value={form.type}
         onChange={(e) =>
-          setForm({ ...form, type: e.target.value as "PERSONAL" | "BUSINESS" })
+          setForm({
+            ...form,
+            type: e.target.value as "PERSONAL" | "BUSINESS",
+          })
         }
       >
         <option value="PERSONAL">Personal</option>
@@ -130,6 +136,7 @@ export default function AddExpenseForm() {
       </select>
 
       <select
+        className={styles.select}
         value={form.categoryId}
         onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
       >
@@ -142,6 +149,7 @@ export default function AddExpenseForm() {
       </select>
 
       <select
+        className={styles.select}
         value={form.payingAccountId}
         onChange={(e) =>
           setForm({ ...form, payingAccountId: e.target.value })
@@ -155,7 +163,7 @@ export default function AddExpenseForm() {
         ))}
       </select>
 
-      <label>
+      <label className={styles.checkbox}>
         <input
           type="checkbox"
           checked={form.isRecurring}
@@ -166,9 +174,13 @@ export default function AddExpenseForm() {
         Cheltuială lunară
       </label>
 
-      <button type="button" onClick={submit}>
+      <button
+        type="button"
+        className={styles.primaryBtn}
+        onClick={submit}
+      >
         Salvează
       </button>
-    </div>
+    </form>
   );
 }

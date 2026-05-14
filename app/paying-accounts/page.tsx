@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./page.module.css";
 
 type PayingAccount = {
   id: string;
@@ -15,8 +16,7 @@ export default function PayingAccountsPage() {
 
   const load = async () => {
     const res = await fetch("/api/paying-accounts");
-    const data: PayingAccount[] = await res.json();
-    setAccounts(data);
+    setAccounts(await res.json());
   };
 
   useEffect(() => {
@@ -38,7 +38,6 @@ export default function PayingAccountsPage() {
 
   const remove = async (id: string) => {
     if (!confirm("Ștergi acest cont?")) return;
-
     await fetch(`/api/paying-accounts/${id}`, { method: "DELETE" });
     load();
   };
@@ -56,35 +55,45 @@ export default function PayingAccountsPage() {
       body: JSON.stringify({ amount, reason }),
     });
 
-    // ✅ reset doar pentru acest cont
     setAdjustValues((prev) => ({ ...prev, [id]: 0 }));
     load();
   };
 
   return (
-    <div>
-      <h1>Conturi plătitoare</h1>
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Conturi plătitoare</h1>
 
-      <div style={{ marginBottom: 16 }}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Cont nou (ex: Revolut)"
-        />
-        <button type="button" onClick={add}>
-          Adaugă
-        </button>
+        <div className={styles.addBox}>
+          <input
+            className={styles.input}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Cont nou (ex: Revolut)"
+          />
+          <button className={styles.primaryBtn} onClick={add}>
+            Adaugă
+          </button>
+        </div>
       </div>
 
-      <ul>
+      <div className={styles.list}>
         {accounts.map((a) => (
-          <li key={a.id} style={{ marginBottom: 12 }}>
-            <strong>{a.name}</strong> – Sold: {a.balance} RON
+          <div key={a.id} className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div>
+                <div className={styles.name}>{a.name}</div>
+                <div className={styles.balance}>
+                  Sold: {a.balance} RON
+                </div>
+              </div>
+            </div>
 
-            <div style={{ marginTop: 4 }}>
+            <div className={styles.actions}>
               <input
                 type="number"
-                placeholder="Ajustare (+ / -)"
+                className={styles.adjustInput}
+                placeholder="+ / -"
                 value={adjustValues[a.id] ?? ""}
                 onChange={(e) =>
                   setAdjustValues((prev) => ({
@@ -92,28 +101,25 @@ export default function PayingAccountsPage() {
                     [a.id]: Number(e.target.value),
                   }))
                 }
-                style={{ width: 120 }}
               />
 
               <button
-                type="button"
+                className={styles.adjustBtn}
                 onClick={() => adjust(a.id)}
-                style={{ marginLeft: 8 }}
               >
                 Ajustează
               </button>
 
               <button
-                type="button"
+                className={styles.deleteBtn}
                 onClick={() => remove(a.id)}
-                style={{ marginLeft: 12 }}
               >
-                🗑
+                Șterge
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
