@@ -52,8 +52,10 @@ export default function PieChartByCategory({
           </Pie>
 
           <Tooltip
-            formatter={(value: number) => `${value} RON`}
-          />
+          formatter={(value) =>
+            value != null ? `${value} RON` : ""
+        }
+/>
         </PieChart>
       </ResponsiveContainer>
     </div>

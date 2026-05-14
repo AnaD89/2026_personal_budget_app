@@ -6,23 +6,27 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
 
+type Theme = "light" | "dark";
+
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
+  // ✅ inițializare corectă din localStorage
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = localStorage.getItem("theme");
+    return saved === "dark" ? "dark" : "light";
+  });
+
+  // ✅ effect DOAR pentru efecte externe (DOM)
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const current = saved ?? "light";
-    setTheme(current);
-    document.documentElement.setAttribute("data-theme", current);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   if (!session) return null;
@@ -33,32 +37,26 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar}>
       <div className={styles.container}>
-        {/* Logo */}
         <Link href="/" className={styles.logo}>
           💰 Budget App
         </Link>
 
-        {/* Links */}
         <div className={styles.links}>
           <Link href="/expenses" className={linkClass("/expenses")}>
             Cheltuieli
           </Link>
-
           <Link href="/categories" className={linkClass("/categories")}>
             Categorii
           </Link>
-
           <Link
             href="/paying-accounts"
             className={linkClass("/paying-accounts")}
           >
             Conturi
           </Link>
-
           <Link href="/reports" className={linkClass("/reports")}>
             Rapoarte
           </Link>
-
           <Link
             href="/transactions"
             className={linkClass("/transactions")}
@@ -67,7 +65,6 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Right side */}
         <div className={styles.right}>
           <button
             className={styles.themeBtn}
