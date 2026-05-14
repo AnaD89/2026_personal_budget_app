@@ -4,12 +4,19 @@ import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { useToast } from "@/components/ToastProvider";
 
-type Category = { id: string; name: string };
-type PayingAccount = { id: string; name: string };
+type Category = {
+  id: string;
+  name: string;
+};
+
+type PayingAccount = {
+  id: string;
+  name: string;
+};
 
 type Expense = {
   id: string;
-  date: string;
+  date: string; // Date serializat (ISO)
   amount: number;
   details: string;
   type: "PERSONAL" | "BUSINESS";
@@ -21,38 +28,46 @@ type Expense = {
 export default function EditExpenseModal({
   expense,
   onClose,
+  onSaved,
 }: {
   expense: Expense;
   onClose: () => void;
+  onSaved: (expense: Expense) => void;
 }) {
   const { showToast } = useToast();
 
   const [form, setForm] = useState({
-  date: new Date(expense.date).toISOString().slice(0, 10),
-  amount: String(expense.amount),
-  details: expense.details,
-  type: expense.type,
-  categoryId: expense.categoryId ?? "",
-  payingAccountId: expense.payingAccountId ?? "",
-  isRecurring: expense.isRecurring,
-});
+    date: new Date(expense.date).toISOString().slice(0, 10),
+    amount: String(expense.amount),
+    details: expense.details,
+    type: expense.type,
+    categoryId: expense.categoryId ?? "",
+    payingAccountId: expense.payingAccountId ?? "",
+    isRecurring: expense.isRecurring,
+  });
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<PayingAccount[]>([]);
 
   useEffect(() => {
-    fetch("/api/categories").then((r) => r.json()).then(setCategories);
-    fetch("/api/paying-accounts").then((r) => r.json()).then(setAccounts);
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then(setCategories);
+
+    fetch("/api/paying-accounts")
+      .then((r) => r.json())
+      .then(setAccounts);
   }, []);
 
   const save = async () => {
     const amount = Number(form.amount);
+
     if (!form.date || Number.isNaN(amount)) {
       showToast("Date invalide", "error");
       return;
     }
 
-    await fetch(`/api/expenses/${expense.id}/edit`, {
+    const res = await fetch(`/api/expenses/${expense.id}/edit`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -66,9 +81,16 @@ export default function EditExpenseModal({
       }),
     });
 
+    if (!res.ok) {
+      showToast("Eroare la salvare", "error");
+      return;
+    }
+
+    const updatedExpense: Expense = await res.json();
+
     showToast("Cheltuială actualizată", "success");
+    onSaved(updatedExpense);
     onClose();
-    location.reload();
   };
 
   return (

@@ -19,13 +19,14 @@ type Expense = {
 };
 
 export default function ExpensesList({
-  expenses,
+  expenses: initialExpenses,
 }: {
   expenses: Expense[];
 }) {
   const { showToast } = useToast();
 
-  // ✅ STATE TREBUIE SĂ FIE AICI
+  // ✅ STATE LOCAL (fără reload)
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [editing, setEditing] = useState<Expense | null>(null);
 
   return (
@@ -60,31 +61,39 @@ export default function ExpensesList({
               {/* DELETE */}
               <button
                 onClick={async () => {
-                  if (!confirm("Ștergi această cheltuială?")) return;
-
                   await fetch(`/api/expenses/${e.id}`, {
                     method: "DELETE",
                   });
 
+                  setExpenses((prev) =>
+                    prev.filter((x) => x.id !== e.id)
+                  );
+
                   showToast("Cheltuială ștearsă", "success");
-                  location.reload();
                 }}
               >
                 🗑
               </button>
 
-              {/* EDIT → DESCHIDE MODAL */}
+              {/* EDIT */}
               <button onClick={() => setEditing(e)}>✏️</button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ✅ MODAL AFIȘAT CONDIȚIONAL */}
+      {/* ✅ MODAL DE EDIT */}
       {editing && (
         <EditExpenseModal
           expense={editing}
           onClose={() => setEditing(null)}
+          onSaved={(updated) => {
+            setExpenses((prev) =>
+              prev.map((e) =>
+                e.id === updated.id ? updated : e
+              )
+            );
+          }}
         />
       )}
     </>

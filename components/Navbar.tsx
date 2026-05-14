@@ -27,6 +27,9 @@ export default function Navbar() {
 
   if (!session) return null;
 
+  const linkClass = (path: string) =>
+    `${styles.link} ${pathname === path ? styles.active : ""}`;
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.container}>
@@ -37,46 +40,40 @@ export default function Navbar() {
 
         {/* Links */}
         <div className={styles.links}>
-          <Link
-            href="/expenses"
-            className={`${styles.link} ${
-              pathname === "/expenses" ? styles.active : ""
-            }`}
-          >
+          <Link href="/expenses" className={linkClass("/expenses")}>
             Cheltuieli
           </Link>
 
-          <Link
-            href="/categories"
-            className={`${styles.link} ${
-              pathname === "/categories" ? styles.active : ""
-            }`}
-          >
+          <Link href="/categories" className={linkClass("/categories")}>
             Categorii
           </Link>
 
           <Link
             href="/paying-accounts"
-            className={`${styles.link} ${
-              pathname === "/paying-accounts" ? styles.active : ""
-            }`}
+            className={linkClass("/paying-accounts")}
           >
             Conturi
           </Link>
 
-          <Link
-            href="/reports"
-            className={`${styles.link} ${
-              pathname === "/reports" ? styles.active : ""
-            }`}
-          >
+          <Link href="/reports" className={linkClass("/reports")}>
             Rapoarte
+          </Link>
+
+          <Link
+            href="/transactions"
+            className={linkClass("/transactions")}
+          >
+            Tranzacții
           </Link>
         </div>
 
         {/* Right side */}
         <div className={styles.right}>
-          <button className={styles.themeBtn} onClick={toggleTheme}>
+          <button
+            className={styles.themeBtn}
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
             {theme === "light" ? "🌙" : "☀️"}
           </button>
 
