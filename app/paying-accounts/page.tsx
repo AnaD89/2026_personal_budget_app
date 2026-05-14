@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
+import ExportButtons from "@/components/ExportButtons";
 
 type PayingAccount = {
   id: string;
@@ -63,6 +64,10 @@ export default function PayingAccountsPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Conturi plătitoare</h1>
+        <ExportButtons
+  pdfUrl="/api/export/paying-accounts/pdf"
+  excelUrl="/api/export/paying-accounts/excel"
+/>
 
         <div className={styles.addBox}>
           <input
