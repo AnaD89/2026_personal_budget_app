@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import Navbar from "@/components/Navbar";
+import { ToastProvider } from "@/components/ToastProvider";
 
 export default function Providers({
   children,
@@ -10,8 +11,10 @@ export default function Providers({
 }) {
   return (
     <SessionProvider>
-      <Navbar />
-      {children}
+      <ToastProvider>
+        <Navbar />
+        {children}
+      </ToastProvider>
     </SessionProvider>
   );
 }
