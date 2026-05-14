@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
+import ExportButtons from "@/components/ExportButtons";
 
 type Transaction = {
   id: string;
@@ -55,6 +56,10 @@ export default function TransactionsPage() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Istoric tranzacții</h1>
+      <ExportButtons
+  pdfUrl="/api/export/transactions/pdf"
+  excelUrl="/api/export/transactions/excel"
+/>
 
       {/* FILTRE */}
       <div className={styles.filters}>
