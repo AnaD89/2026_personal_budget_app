@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import AccountBalances from "@/components/AccountBalances";
 import AddExpenseForm from "@/components/AddExpenseForm";
 
+// ✅ REFOLOSIM EXACT STILURILE DE TRANSACTIONS
+import styles from "@/app/transactions/page.module.css";
+
 type Expense = {
   id: string;
   date: string;
@@ -30,14 +33,10 @@ export default function ExpensesPage() {
         } else if (Array.isArray(data?.data)) {
           setExpenses(data.data);
         } else {
-          console.warn("Expenses API returned:", data);
           setExpenses([]);
         }
       })
-      .catch((err) => {
-        console.error("Fetch expenses error:", err);
-        setExpenses([]);
-      });
+      .catch(() => setExpenses([]));
   }, [refreshKey]);
 
   return (
@@ -53,7 +52,6 @@ export default function ExpensesPage() {
           Solduri conturi
         </h2>
 
-        {/* ✅ AICI SE FOLOSEȘTE DESIGNUL IDENTIC CU REPORTS */}
         <AccountBalances refreshKey={refreshKey} />
       </section>
 
@@ -72,45 +70,32 @@ export default function ExpensesPage() {
         </div>
       </section>
 
-      {/* ================= LISTĂ CHELTUIELI ================= */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">
+      {/* ================= LISTĂ CHELTUIELI (IDENTICĂ CU TRANSACTIONS) ================= */}
+      <section>
+        <h2 className="text-lg font-semibold mb-2">
           Cheltuieli recente
         </h2>
 
-        <div className="space-y-4">
+        <div className={styles.list}>
           {expenses.map((e) => (
-            <div
-              key={e.id}
-              className="flex items-center justify-between rounded-xl border bg-white p-5 shadow-sm hover:shadow-md transition"
-            >
-              {/* STÂNGA – DETALII */}
-              <div className="flex flex-col gap-1">
-                <span className="text-base font-semibold">
-                  {e.details || "—"}
-                </span>
+            <div key={e.id} className={styles.row}>
+              <div>
+                <div>{e.details ?? "—"}</div>
 
-                <span className="text-sm text-gray-500">
-                  {new Date(e.date).toLocaleDateString("ro-RO")} •{" "}
-                  {e.payingAccount?.name ?? "—"}
-                </span>
+                <div className={styles.meta}>
+                  {e.payingAccount?.name ?? "—"} •{" "}
+                  {new Date(e.date).toLocaleString()}
+                </div>
               </div>
 
-              {/* DREAPTA – SUMA */}
-              <div className="flex flex-col items-end">
-                <span className="text-xl font-bold text-red-600">
-                  −{e.amount} RON
-                </span>
-
-                <span className="text-xs text-gray-400">
-                  cheltuială
-                </span>
+              <div className={styles.negative}>
+                −{e.amount} RON
               </div>
             </div>
           ))}
 
           {expenses.length === 0 && (
-            <div className="italic text-gray-500">
+            <div className={styles.meta}>
               Nu există cheltuieli.
             </div>
           )}
