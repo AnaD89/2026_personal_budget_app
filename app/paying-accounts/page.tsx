@@ -37,28 +37,32 @@ export default function PayingAccountsPage() {
     load();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Ștergi acest cont?")) return;
-    await fetch(`/api/paying-accounts/${id}`, { method: "DELETE" });
-    load();
-  };
+  
+const remove = async (id: string) => {
+  if (!confirm("Ștergi acest cont?")) return;
 
-  const adjust = async (id: string) => {
-    const amount = adjustValues[id];
-    if (amount === undefined || Number.isNaN(amount)) return;
+  const res = await fetch(
+    `/api/paying-accounts/${id}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
 
-    const reason = prompt("Motiv ajustare sold:");
-    if (!reason) return;
+  if (!res.ok) {
+    const data = await res.json();
+    alert(
+      data.error ??
+        "Nu s-a putut șterge contul."
+    );
+    return;
+  }
 
-    await fetch(`/api/paying-accounts/${id}/adjust`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount, reason }),
-    });
+  alert("✅ Cont șters");
+  load();
+};
 
-    setAdjustValues((prev) => ({ ...prev, [id]: 0 }));
-    load();
-  };
+
 
   return (
     <div className={styles.page}>

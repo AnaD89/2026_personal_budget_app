@@ -39,14 +39,29 @@ export default function PayingAccountsPage() {
 
   // ✅ ștergere cont
   const remove = async (id: string) => {
-    if (!confirm("Ștergi acest cont?")) return;
+  if (!confirm("Ștergi acest cont?")) return;
 
-    await fetch(`/api/paying-accounts/${id}`, {
+  const res = await fetch(
+    `/api/paying-accounts/${id}`,
+    {
       method: "DELETE",
-    });
+      credentials: "include",
+    }
+  );
 
-    load();
-  };
+  if (!res.ok) {
+    const data = await res.json();
+
+    alert(
+      data.error ??
+        "Nu s-a putut șterge contul."
+    );
+    return;
+  }
+
+  alert("✅ Cont șters");
+  load();
+};
 
   // ✅ ajustare manuală sold
   const adjust = async (id: string, amount: number) => {
