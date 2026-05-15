@@ -1,5 +1,6 @@
 import "./globals.css";
 import { ReactNode } from "react";
+import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 
 export default function RootLayout({
@@ -11,7 +12,10 @@ export default function RootLayout({
     <html lang="ro">
       <body>
         <Providers>
-          <main style={{ padding: 24 }}>{children}</main>
+          <Navbar />
+          <main style={{ padding: 24 }}>
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
