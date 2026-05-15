@@ -12,11 +12,12 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const account = await prisma.payingAccount.create({
-    data: {
-      name: body.name,
-      balance: 0,
-    },
-  });
+  data: {
+    name: body.name,
+    currency: body.currency,
+    balance: 0, // Decimal
+  },
+});
 
   return NextResponse.json(account, { status: 201 });
 }

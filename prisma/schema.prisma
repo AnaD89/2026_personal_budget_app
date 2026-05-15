@@ -109,7 +109,8 @@ model Category {
 model PayingAccount {
   id           String               @id @default(uuid())
   name         String
-  balance      Float                @default(0)
+  balance      Decimal                @default(0.0)
+  currency     String               @default("RON")
   expenses     Expense[]
   transactions AccountTransaction[]
 }
@@ -120,7 +121,7 @@ model PayingAccount {
 model Expense {
   id              String   @id @default(uuid())
   date            DateTime
-  amount          Float
+  amount          Decimal   @default(0.0)
   details         String
   type            ExpenseType
   isRecurring     Boolean  @default(false)
