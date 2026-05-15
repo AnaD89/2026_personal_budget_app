@@ -1,5 +1,6 @@
 import ExportButtons from "@/components/ExportButtons";
 import AddExpenseForm from "@/components/AddExpenseForm";
+import AddIncomeForm from "@/components/AddIncomeForm";
 
 export default function DashboardPage() {
   return (

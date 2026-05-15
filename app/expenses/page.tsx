@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AccountBalances from "@/components/AccountBalances";
 import AddExpenseForm from "@/components/AddExpenseForm";
+import AddIncomeForm from "@/components/AddIncomeForm";
 
 // ✅ REFOLOSIM EXACT STILURILE DE TRANSACTIONS
 import styles from "@/app/transactions/page.module.css";

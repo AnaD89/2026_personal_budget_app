@@ -3,6 +3,7 @@ import { authOptions } from "../lib/auth";
 import { prisma } from "@/lib/prisma";
 import AddExpenseForm from "@/components/AddExpenseForm";
 import ExportButtons from "@/components/ExportButtons";
+import AddIncomeForm from "@/components/AddIncomeForm";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -31,6 +32,9 @@ export default async function DashboardPage() {
           excelUrl="/api/export/global/excel"
         />
       </div>
+
+      {/* ADD INCOME */}
+      <AddIncomeForm />
 
       {/* ADD EXPENSE */}
       <AddExpenseForm />
