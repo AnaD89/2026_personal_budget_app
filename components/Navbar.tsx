@@ -96,33 +96,43 @@ export default function Navbar() {
             Converter
           </Link>
         </div>
+<div className={styles.right}>
+  {/* AVATAR GITHUB */}
+  
+<img
+  src={session.user.image ?? ""}
+  alt="User avatar"
+  className={styles.avatar}
+/>
 
-        {/* USER */}
-        <div className={styles.right}>
-          <span className={styles.user}>
-  {session.user.name}{" "}
-  <span className={styles.userEmail}>
-    ({session.user.email})
+
+
+  {/* NUME + EMAIL */}
+  <span className={styles.user}>
+    {session.user.name}{" "}
+    <span className={styles.userEmail}>
+      ({session.user.email})
+    </span>
   </span>
-</span>
 
-          <button
-            className={styles.themeBtn}
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? "🌙" : "☀️"}
-          </button>
+  {/* THEME */}
+  <button
+    className={styles.themeBtn}
+    onClick={toggleTheme}
+    aria-label="Toggle theme"
+  >
+    {theme === "light" ? "🌙" : "☀️"}
+  </button>
 
-          <button
-            className={styles.logoutBtn}
-            onClick={() =>
-              signOut({ callbackUrl: "/login" })
-            }
-          >
-            Logout
-          </button>
-        </div>
+  {/* LOGOUT */}
+  <button
+    className={styles.logoutBtn}
+    onClick={() => signOut({ callbackUrl: "/login" })}
+  >
+    Logout
+  </button>
+</div>       
+        
       </div>
     </nav>
   );

@@ -65,3 +65,21 @@
   color: var(--danger);
   cursor: pointer;
 }
+
+.user {
+  font-size: 14px;
+  color: #374151; /* gray-700 */
+}
+
+.userEmail {
+  margin-left: 4px;
+  color: #6b7280; /* gray-500 */
+  font-size: 12px;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
