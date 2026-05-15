@@ -1,4 +1,5 @@
 import ExportButtons from "@/components/ExportButtons";
+import AddExpenseForm from "@/components/AddExpenseForm";
 
 export default function DashboardPage() {
   return (

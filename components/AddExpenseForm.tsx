@@ -23,7 +23,11 @@ type ExpenseFormState = {
   isRecurring: boolean;
 };
 
-export default function AddExpenseForm() {
+export default function AddExpenseForm({
+  onSuccess,
+}: {
+  onSuccess?: () => void;
+}) {
   const [form, setForm] = useState<ExpenseFormState>({
     date: "",
     amount: "",
@@ -35,9 +39,10 @@ export default function AddExpenseForm() {
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [accounts, setAccounts] = useState<PayingAccount[]>([]);
+  const [accounts, setAccounts] =
+    useState<PayingAccount[]>([]);
 
-  // ✅ Load dropdown data
+  /* ===== LOAD DROPDOWNS ===== */
   useEffect(() => {
     fetch("/api/categories")
       .then((res) => res.json())
@@ -48,6 +53,7 @@ export default function AddExpenseForm() {
       .then(setAccounts);
   }, []);
 
+  /* ===== SUBMIT ===== */
   const submit = async () => {
     if (!form.date || !form.amount || !form.details) {
       alert("❌ Completează toate câmpurile obligatorii");
@@ -58,7 +64,9 @@ export default function AddExpenseForm() {
       const response = await fetch("/api/expenses", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           date: form.date,
           amount: Number(form.amount),
@@ -66,7 +74,8 @@ export default function AddExpenseForm() {
           type: form.type,
           isRecurring: form.isRecurring,
           categoryId: form.categoryId || null,
-          payingAccountId: form.payingAccountId || null,
+          payingAccountId:
+            form.payingAccountId || null,
         }),
       });
 
@@ -77,12 +86,15 @@ export default function AddExpenseForm() {
 
       if (!response.ok) {
         const text = await response.text();
-        alert(`❌ Eroare API (${response.status})\n${text}`);
+        alert(
+          `❌ Eroare API (${response.status})\n${text}`
+        );
         return;
       }
 
       alert("✅ Cheltuială salvată");
 
+      // ✅ reset form
       setForm({
         date: "",
         amount: "",
@@ -92,6 +104,9 @@ export default function AddExpenseForm() {
         payingAccountId: "",
         isRecurring: false,
       });
+
+      // ✅ notifică pagina părinte
+      onSuccess?.();
     } catch (err) {
       alert("❌ Eroare JS: " + String(err));
     }
@@ -103,7 +118,9 @@ export default function AddExpenseForm() {
         type="date"
         className={styles.input}
         value={form.date}
-        onChange={(e) => setForm({ ...form, date: e.target.value })}
+        onChange={(e) =>
+          setForm({ ...form, date: e.target.value })
+        }
       />
 
       <input
@@ -111,14 +128,24 @@ export default function AddExpenseForm() {
         className={styles.input}
         placeholder="Sumă"
         value={form.amount}
-        onChange={(e) => setForm({ ...form, amount: e.target.value })}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            amount: e.target.value,
+          })
+        }
       />
 
       <input
         className={styles.input}
         placeholder="Detalii"
         value={form.details}
-        onChange={(e) => setForm({ ...form, details: e.target.value })}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            details: e.target.value,
+          })
+        }
       />
 
       <select
@@ -127,7 +154,9 @@ export default function AddExpenseForm() {
         onChange={(e) =>
           setForm({
             ...form,
-            type: e.target.value as "PERSONAL" | "BUSINESS",
+            type: e.target.value as
+              | "PERSONAL"
+              | "BUSINESS",
           })
         }
       >
@@ -138,9 +167,16 @@ export default function AddExpenseForm() {
       <select
         className={styles.select}
         value={form.categoryId}
-        onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            categoryId: e.target.value,
+          })
+        }
       >
-        <option value="">Selectează categorie</option>
+        <option value="">
+          Selectează categorie
+        </option>
         {categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -152,10 +188,15 @@ export default function AddExpenseForm() {
         className={styles.select}
         value={form.payingAccountId}
         onChange={(e) =>
-          setForm({ ...form, payingAccountId: e.target.value })
+          setForm({
+            ...form,
+            payingAccountId: e.target.value,
+          })
         }
       >
-        <option value="">Selectează cont</option>
+        <option value="">
+          Selectează cont
+        </option>
         {accounts.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}
@@ -168,7 +209,10 @@ export default function AddExpenseForm() {
           type="checkbox"
           checked={form.isRecurring}
           onChange={(e) =>
-            setForm({ ...form, isRecurring: e.target.checked })
+            setForm({
+              ...form,
+              isRecurring: e.target.checked,
+            })
           }
         />
         Cheltuială lunară
