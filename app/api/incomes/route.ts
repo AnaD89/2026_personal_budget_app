@@ -17,28 +17,37 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    // ✅ VALIDARE CÂMPURI OBLIGATORII
+    // ✅ VALIDARE
     if (
       !body.date ||
       body.amount === undefined ||
       !body.details ||
-      !body.payingAccountId
+      !body.payingAccountId ||
+      !body.type
     ) {
       return new Response("Missing required fields", {
         status: 400,
       });
     }
 
+    // ✅ VALIDARE ENUM EXISTENT
+    if (
+      body.type !== "PERSONAL" &&
+      body.type !== "BUSINESS"
+    ) {
+      return new Response("Invalid expense type", {
+        status: 400,
+      });
+    }
+
     const income = await prisma.expense.create({
       data: {
-        // ✅ conversii explicite
         date: new Date(body.date),
-        amount: Number(body.amount),
+        amount: Number(body.amount), // ✅ pozitiv = încasare
         details: body.details,
 
-        // ✅ FOLOSIM ACELAȘI MODEL (Expense)
-        // dar cu type = INCOME
-        type: "INCOME",
+        // ✅ FOLOSIM ENUMUL EXISTENT
+        type: body.type,
 
         isRecurring: false,
 

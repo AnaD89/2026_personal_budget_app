@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import styles from "@/app/expenses/page.module.css";
+import { useEffect, useState } from "react";
 
 type PayingAccount = {
   id: string;
@@ -29,7 +29,7 @@ export default function AddIncomeForm({
 
   const [accounts, setAccounts] = useState<PayingAccount[]>([]);
 
-  // ✅ load conturi
+  // ✅ Load conturi
   useEffect(() => {
     fetch("/api/paying-accounts")
       .then((res) => res.json())
@@ -58,6 +58,9 @@ export default function AddIncomeForm({
         amount: Number(form.amount),
         details: form.details,
         payingAccountId: form.payingAccountId,
+
+        // ✅ conform enum Prisma
+        type: "PERSONAL",
       }),
     });
 
@@ -66,7 +69,7 @@ export default function AddIncomeForm({
       return;
     }
 
-    // ✅ reset form
+    // ✅ Reset formular
     setForm({
       date: "",
       amount: "",
@@ -94,10 +97,7 @@ export default function AddIncomeForm({
         placeholder="Sumă"
         value={form.amount}
         onChange={(e) =>
-          setForm({
-            ...form,
-            amount: e.target.value,
-          })
+          setForm({ ...form, amount: e.target.value })
         }
       />
 
@@ -106,10 +106,7 @@ export default function AddIncomeForm({
         placeholder="Detalii"
         value={form.details}
         onChange={(e) =>
-          setForm({
-            ...form,
-            details: e.target.value,
-          })
+          setForm({ ...form, details: e.target.value })
         }
       />
 
